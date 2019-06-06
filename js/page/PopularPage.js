@@ -3,21 +3,48 @@ import { StyleSheet, Text, View } from 'react-native'
 import { createAppContainer,createMaterialTopTabNavigator } from 'react-navigation'
 import NavigationUtil from '../navigator/NavigationUtil'
 export default class PopularPage extends Component{
-	_topNavigator(){
-		const TopTabNavigator = createMaterialTopTabNavigator({
-			PopularTab1:{
+	constructor(props){
+		super(props)
+		this.tabNames = ['Java','Android','iOS','React','React Native','PHP']
+	}
+	//循环生成tab
+	_renderTabs(){
+		const tabs = {}
+		this.tabNames.map((item,i)=>{
+/*			tabs[`tab${i}`] = {
 				screen:PopularTab,
 				navigationOptions:{
-					title:'Tab1'
+					title:`${item}`
 				}
-			},
-			PopularTab2:{
-				screen:PopularTab,
+			}*/
+			//如果需要传递参数
+			tabs[`tab${i}`] = {
+				screen:props => <PopularTab tabLabel={item}/>,
 				navigationOptions:{
-					title:'Tab2'
+					title:`${item}`
 				}
 			}
 		})
+		return tabs
+	}
+
+	_topNavigator(){
+		const TopTabNavigator = createMaterialTopTabNavigator(
+			this._renderTabs(),{
+				tabBarOptions:{
+					tabStyle:{
+						width:100
+					},
+					upperCaseLabel:false,//是否使用标签大写 默认为true
+					scrollEnabled:true,//是否支持选项卡滚动 默认为false
+					style:{
+						backgroundColor:'#ff9500'
+					},
+					indicatorStyle:styles.indicatorStyle,
+					labelStyle:styles.labelStyle
+				}
+			}
+		)
 		return createAppContainer(TopTabNavigator)
 	}
 	render(){
@@ -45,15 +72,21 @@ class PopularTab extends Component{
 	}
 }
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  }
+	container: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		backgroundColor: '#F5FCFF',
+	},
+	tabStyles:{
+		width:50,
+	},
+	indicatorStyle:{
+		height:2,
+		backgroundColor:'white',
+	},
+	labelStyle:{
+		fontSize:13,
+		fontWeight:'bold'
+	}
 });
