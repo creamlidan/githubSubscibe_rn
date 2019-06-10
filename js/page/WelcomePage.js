@@ -21,11 +21,6 @@ export default class WelcomePage extends Component{
 		return (
 			<View style={styles.container}>
 				<Text>我是WelcomePage</Text>
-				<Button
-					title={'跳过'}
-					onPress={()=>{
-						navigation.navigate('Main')
-					}}></Button>
 			</View>
 		)
 	}

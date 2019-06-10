@@ -6,11 +6,14 @@ import {
 import WelcomePage from '../page/WelcomePage'
 import HomePage from '../page/HomePage'
 import Details from '../page/Details'
+import FetchDemo from '../page/FetchDemo'
+import AsyncStorageDemoPage from '../page/AsyncStorageDemoPage'
+import DataStoreDemoPage from '../page/DataStoreDemoPage'
 //redux
 import { connect } from 'react-redux'
 import { createReactNavigationReduxMiddleware,createReduxContainer } from 'react-navigation-redux-helpers'
 
-//è®¾ç½®è·Ÿè·¯ç”±
+//ÉèÖÃ¸úÂ·ÓÉ
 export const rootCom = 'Init'
 
 const InitNavigator = createStackNavigator({
@@ -31,9 +34,27 @@ const MainNavigator = createStackNavigator({
 	DetailsPage:{
 		screen:Details,
 		navigationOptions:{
-			title:'æˆ‘æ˜¯è¯¦æƒ…'
+			title:'ÎÒÊÇÏêÇé'
 		}
-	}
+	},
+	FetchDemo:{
+		screen:FetchDemo,
+		navigationOptions:{
+			title:'FetchDemo'
+		}
+	},
+	AsyncStorageDemoPage:{
+		screen:AsyncStorageDemoPage,
+		navigationOptions:{
+			title:'AsyncStorageDemoPage'
+		}
+	},
+	DataStoreDemoPage:{
+		screen:DataStoreDemoPage,
+		navigationOptions:{
+			title:'DataStoreDemoPage'
+		}
+	},
 })
 
 export const RootNavigator = createAppContainer(createSwitchNavigator({
@@ -45,13 +66,13 @@ export const RootNavigator = createAppContainer(createSwitchNavigator({
 	}
 }))
 
-//reduxä½¿ç”¨æµç¨‹
+//reduxÊ¹ÓÃÁ÷³Ì
 /*
-* 1.åˆå§‹åŒ–react-navigationä¸reduxçš„ä¸­é—´ä»¶
-* æœ€å¤§ä½œç”¨å°±æ˜¯ä¸ºreduxifyNavigatorçš„keyè®¾ç½®actionSubscribers(è¡Œä¸ºè®¢é˜…è€…)
-* è®¾ç½®è®¢é˜…è€…
-* æ£€æµ‹è®¢é˜…è€…æ˜¯å¦å­˜åœ¨
-* åœ¨é¡¹ç›®ä¸­å³ä½¿ä¸ä½¿ç”¨ä¹Ÿéœ€è¦åˆå§‹åŒ–å› ä¸ºæ–¹æ³•é‡Œé¢ä½¿ç”¨keyå…³è”åˆ°äº†state
+* 1.³õÊ¼»¯react-navigationÓëreduxµÄÖĞ¼ä¼ş
+* ×î´ó×÷ÓÃ¾ÍÊÇÎªreduxifyNavigatorµÄkeyÉèÖÃactionSubscribers(ĞĞÎª¶©ÔÄÕß)
+* ÉèÖÃ¶©ÔÄÕß
+* ¼ì²â¶©ÔÄÕßÊÇ·ñ´æÔÚ
+* ÔÚÏîÄ¿ÖĞ¼´Ê¹²»Ê¹ÓÃÒ²ĞèÒª³õÊ¼»¯ÒòÎª·½·¨ÀïÃæÊ¹ÓÃkey¹ØÁªµ½ÁËstate
 */
 
 export const middleware = createReactNavigationReduxMiddleware(
@@ -60,14 +81,14 @@ export const middleware = createReactNavigationReduxMiddleware(
 )
 
 /*
-* 2.å°†æ ¹å¯¼èˆªå™¨ç»„ä»¶ä¼ é€’ç»™reduxifyNavigatorå‡½æ•°
-* å¹¶è¿”å›ä¸€ä¸ªå°†navigation stateå’Œdispatchå‡½æ•°ä½œä¸ºpropsçš„æ–°ç»„ä»¶
-* æ³¨æ„ï¼šè¦åœ¨createReactNavigationReduxMiddlewareä¹‹åæ‰§è¡Œ
+* 2.½«¸ùµ¼º½Æ÷×é¼ş´«µİ¸øreduxifyNavigatorº¯Êı
+* ²¢·µ»ØÒ»¸ö½«navigation stateºÍdispatchº¯Êı×÷ÎªpropsµÄĞÂ×é¼ş
+* ×¢Òâ£ºÒªÔÚcreateReactNavigationReduxMiddlewareÖ®ºóÖ´ĞĞ
 */
 const AppWithNavigationState = createReduxContainer(RootNavigator, 'root');
 
 /*
-* Stateåˆ°Propsçš„æ˜ å°„å…³ç³»
+* Stateµ½PropsµÄÓ³Éä¹ØÏµ
 * @param state
 */
 const mapStateTpProps = state =>({
@@ -75,6 +96,6 @@ const mapStateTpProps = state =>({
 })
 
 /*
-* 3.è¿æ¥React ç»„ä»¶ä¸Redux store
+* 3.Á¬½ÓReact ×é¼şÓëRedux store
 */
 export default connect(mapStateTpProps)(AppWithNavigationState)

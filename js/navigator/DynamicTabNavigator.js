@@ -145,7 +145,6 @@ class TabBarComponent extends Component{
 		)
 	}
 }
-
 const mapStateToProps = state => ({
 	theme: state.theme.theme
 })
