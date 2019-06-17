@@ -1,23 +1,23 @@
 import AsyncStorage from '@react-native-community/async-storage'
+import Trending from 'GitHubTrending';
+export const FLAG_STORAGE = {flag_popular: 'popular', flag_trending: 'trending'};
 
 export default class DataStore{
 	//入口方法
-	fetchData(url){
+	fetchData(url,flag){
 		return new Promise((resolve,reject)=>{
 			this.fetchLocalData(url).then((wrapData) =>{
-				console.log('wrapData---------'+wrapData)
-				console.log('DataStore---------'+DataStore.checkTimeStampValid(wrapData.timestamp))
 				if(wrapData && DataStore.checkTimeStampValid(wrapData.timestamp)){
 					resolve(wrapData)
 				}else{
-					this.fetchNetData(url).then((data)=>{
+					this.fetchNetData(url,flag).then((data)=>{
 						resolve(this._wrapData(data))
 					}).catch((error)=>{
 						reject(error)
 					})
 				}
 			}).catch((error)=>{
-				this.fetchNetData(url).then((data)=>{
+				this.fetchNetData(url,flag).then((data)=>{
 					resolve(this._wrapData(data))
 				}).catch((error)=>{
 					reject(error)
@@ -38,7 +38,6 @@ export default class DataStore{
 	fetchLocalData(url) {
         return new Promise((resolve, reject) => {
             AsyncStorage.getItem(url, (error, result) => {
-            	console.log(result)
                 if (!error) {
                     try {
                         resolve(JSON.parse(result));
@@ -54,22 +53,36 @@ export default class DataStore{
         })
     }
 	//从网络获取数据
-	fetchNetData(url){
+	fetchNetData(url,flag){
 		return new Promise((resolve,reject)=>{
-			fetch(url)
-			.then((response)=>{
-				if(response.ok){
-					return response.json();
-				}
-				throw new Error('Network response was not ok.')
-			})
-			.then((responseData)=>{
-				this.saveData(url,responseData)
-				resolve(responseData)
-			})
-			.catch((error) =>{
-				reject(error)
-			})
+			if(flag !== FLAG_STORAGE.flag_trending){
+				fetch(url)
+				.then((response)=>{
+					if(response.ok){
+						return response.json();
+					}
+					throw new Error('Network response was not ok.')
+				})
+				.then((responseData)=>{
+					this.saveData(url,responseData)
+					resolve(responseData)
+				})
+				.catch((error) =>{
+					reject(error)
+				})
+			}else{
+				new Trending().fetchTrending(url)
+                    .then(items => {
+                        if (!items) {
+                            throw new Error('responseData is null');
+                        }
+                        this.saveData(url, items);
+                        resolve(items);
+                    })
+                    .catch(error => {
+                        reject(error);
+                    })
+			}
 		})
 	}
 

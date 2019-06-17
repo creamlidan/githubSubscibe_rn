@@ -1,8 +1,9 @@
 import Types from '../../action/types'
+import Variates from '../../common/Variate'
 
 //默认
 const defaultState = {
-	theme:'blue'
+	theme:Variates.THEME_COLOR
 }
 export default function onAction(state = defaultState,action){
 	switch(action.type){

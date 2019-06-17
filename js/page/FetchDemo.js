@@ -12,9 +12,7 @@ export default class FetchDemo extends Component{
 		let url = `https://api.github.com/search/repositories?q=${this.writeText}`
 		fetch(url)
 			.then(response => {
-				console.log(response)
 				if(response.ok){
-					console.log(response)
 					return response.text()
 				}
 				throw new Error('NetWork response was not ok.')

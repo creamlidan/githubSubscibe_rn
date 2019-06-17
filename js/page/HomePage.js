@@ -2,20 +2,23 @@ import React,{ Component } from 'react';
 import { StyleSheet, Text, View } from 'react-native'
 import DynamicTabNavigator from '../navigator/DynamicTabNavigator'
 import NavigationUtil from '../navigator/NavigationUtil'
+import BackPressComponent from '../common/BackPressComponent'
 
-//监听物理键
-import { BackHandler } from 'react-native';
 import { NavigationActions } from 'react-navigation'
 import { connect } from 'react-redux'
 
 class HomePage extends Component{
+	constructor(props){
+		super(props)
+		this.backPress = new BackPressComponent({backPress:this.onBackPress()})
+	}
 	//监听物理键
 	componentDidMount(){
-		BackHandler.addEventListener('hardwareBackPress',this.onBackPress)
+		this.backPress.componentDidMount();
 	}
 	//销毁时移除监听
 	componentWillUnmount(){
-		BackHandler.removeEventListener('hardwareBackPress',this.onBackPress)
+		this.backPress.componentWillUnmount();
 	}
 
 	/**

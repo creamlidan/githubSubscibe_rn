@@ -11,7 +11,6 @@ export default class AsyncStorageDemoPage extends Component{
 		}
 	}
 	_setData(){
-		console.log(AsyncStorage)
 		AsyncStorage.setItem(KEY,this.writeText,error=>{
 			error && console.log(error.toString)
 		})

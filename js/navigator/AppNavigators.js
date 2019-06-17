@@ -5,7 +5,7 @@ import {
 } from 'react-navigation'
 import WelcomePage from '../page/WelcomePage'
 import HomePage from '../page/HomePage'
-import Details from '../page/Details'
+import DetailPage from '../page/DetailPage'
 import FetchDemo from '../page/FetchDemo'
 import AsyncStorageDemoPage from '../page/AsyncStorageDemoPage'
 import DataStoreDemoPage from '../page/DataStoreDemoPage'
@@ -31,10 +31,10 @@ const MainNavigator = createStackNavigator({
 			header:null
 		}
 	},
-	DetailsPage:{
-		screen:Details,
+	DetailPage:{
+		screen:DetailPage,
 		navigationOptions:{
-			title:'Œ“ «œÍ«È'
+			header:null
 		}
 	},
 	FetchDemo:{
