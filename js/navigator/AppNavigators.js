@@ -6,9 +6,8 @@ import {
 import WelcomePage from '../page/WelcomePage'
 import HomePage from '../page/HomePage'
 import DetailPage from '../page/DetailPage'
-import FetchDemo from '../page/FetchDemo'
-import AsyncStorageDemoPage from '../page/AsyncStorageDemoPage'
-import DataStoreDemoPage from '../page/DataStoreDemoPage'
+import WebViewPage from '../page/WebViewPage'
+import AboutPage from '../page/about/AboutPage'
 //redux
 import { connect } from 'react-redux'
 import { createReactNavigationReduxMiddleware,createReduxContainer } from 'react-navigation-redux-helpers'
@@ -37,24 +36,18 @@ const MainNavigator = createStackNavigator({
 			header:null
 		}
 	},
-	FetchDemo:{
-		screen:FetchDemo,
+	WebViewPage:{
+		screen:WebViewPage,
 		navigationOptions:{
-			title:'FetchDemo'
+			header:null
 		}
 	},
-	AsyncStorageDemoPage:{
-		screen:AsyncStorageDemoPage,
+	AboutPage:{
+		screen:AboutPage,
 		navigationOptions:{
-			title:'AsyncStorageDemoPage'
+			header:null
 		}
-	},
-	DataStoreDemoPage:{
-		screen:DataStoreDemoPage,
-		navigationOptions:{
-			title:'DataStoreDemoPage'
-		}
-	},
+	}
 })
 
 export const RootNavigator = createAppContainer(createSwitchNavigator({

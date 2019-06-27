@@ -26,7 +26,7 @@ export default function onAction(state = defaultState,action){
 				[action.storeName]:{
 					...state[action.storeName],
 					items:action.items,//原始数据
-					projectModes:action.projectModes,//此次需要加载的数据
+					projectModels:action.projectModels,//此次需要加载的数据
 					isLoading:false,
 					hideLoadingMore: false,
                     pageIndex: action.pageIndex
@@ -57,7 +57,7 @@ export default function onAction(state = defaultState,action){
 				...state,
 				[action.storeName]:{
 					...state[action.storeName],
-					projectModes:action.projectModes,
+					projectModels:action.projectModels,
 					hideLoadingMore:false,
 					pageIndex:action.pageIndex
 				}
@@ -71,6 +71,14 @@ export default function onAction(state = defaultState,action){
 					pageIndex:action.pageIndex
 				}
 			}
+		case Types.FLUSH_POPULAR_FAVORITE:
+			return {
+				...state,
+				[action.storeName]:{
+					...state[action.storeName],
+					projectModels:action.projectModels,
+			}
+		}
 		default:
 			return state;
 	}

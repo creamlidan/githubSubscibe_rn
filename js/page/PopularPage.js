@@ -10,7 +10,17 @@ import PopularItem from '../common/PopularItem'
 const URL = 'https://api.github.com/search/repositories?q='
 const QUERY_STR = '&sort=stars' //排序方式默认是star
 import Variates from '../common/Variate'
+import FavoriteUtil from "../util/FavoriteUtil";
+import {FLAG_STORAGE} from "../expand/dao/DataStore";
 const PAGESIZE = 10
+//收藏功能
+import FavoriteDao from "../expand/dao/FavoriteDao";
+const favoriteDao = new FavoriteDao(FLAG_STORAGE.flag_popular);
+
+//监听总线通知
+import EventTypes from '../util/EventTypes';
+import EventBus from 'react-native-event-bus'
+
 export default class PopularPage extends Component{
 	constructor(props){
 		super(props)
@@ -78,20 +88,36 @@ class PopularTab extends Component{
 		super(props)
 		const { tabLabel } = this.props
 		this.storeName = tabLabel
+		//默认收藏页面时没有发送收藏取消通知
+		this.isFavoriteChanged = false
 	}
 	componentDidMount(){
 		this._loadData()
+		EventBus.getInstance().addListener(EventTypes.favorite_changed_popular,this.favoriteChangeListener  = data =>{
+			this.isFavoriteChanged = true
+		})
+		EventBus.getInstance().addListener(EventTypes.bottom_tab_select,this.bottomTabSelectListener = (data)=>{
+			if(data.to === 0 && this.isFavoriteChanged){
+				this._loadData(null,true)
+			}
+		})
 	}
-	_loadData(loadMore){
-		const { onLoadRefreshPopular,onLoadMorePopular } = this.props;
+	componentWillUnmount() {
+		EventBus.getInstance().removeListener(this.favoriteChangeListener);
+		EventBus.getInstance().removeListener(this.bottomTabSelectListener);
+	}
+	_loadData(loadMore,refreshFavorite){
+		const { onLoadRefreshPopular,onLoadMorePopular,onFlushPopularFavorite } = this.props;
 		const store = this._store();
 		let url = this._getFatchUrl(this.storeName)
 		if(loadMore){
-			onLoadMorePopular(this.storeName,++store.pageIndex,PAGESIZE,store.items,callback =>{
+			onLoadMorePopular(this.storeName,++store.pageIndex,PAGESIZE,store.items,favoriteDao,callback =>{
 				this.refs.toast.show('没有更多了~');
 			})
+		}else if(refreshFavorite){
+			onFlushPopularFavorite(this.storeName,store.pageIndex,PAGESIZE,store.items,favoriteDao)
 		}else{
-			onLoadRefreshPopular(this.storeName,url,PAGESIZE)
+			onLoadRefreshPopular(this.storeName, url, PAGESIZE, favoriteDao)
 		}
 		
 	}
@@ -101,12 +127,15 @@ class PopularTab extends Component{
 	_renderItem($data){
 		const item = $data.item;
 		return <PopularItem
-			item = {item}
-			onSelect={()=>{
+			projectModel = {item}
+			onSelect={(callback)=>{
 				NavigationUtil.goPage({
 					projectModel:item,
+					flag:FLAG_STORAGE.flag_popular,
+					callback
 				},'DetailPage')
 			}}
+			onFavorite={(item,isFavorite)=>FavoriteUtil.onFavorite(favoriteDao,item,isFavorite,FLAG_STORAGE.flag_popular)}
 		/>
 	}
 	_store(){
@@ -117,7 +146,7 @@ class PopularTab extends Component{
 				items:[],
 				isLoading:false,
 				pageIndex:1,
-				projectModes:[],
+				projectModels:[],
 				hideLoadingMore:true,//默认会隐藏加载更多
 			}
 		}
@@ -142,9 +171,9 @@ class PopularTab extends Component{
 		return (
 			<View style={styles.container}>
 				<FlatList
-					data= {store.projectModes}
+					data= {store.projectModels}
 					renderItem = {data =>this._renderItem(data)}
-					keyExtractor={item=>''+item.id}
+					keyExtractor={item=>''+item.item.id}
 					refreshControl = {
 						<RefreshControl
 							title={'Loading'}
@@ -186,8 +215,9 @@ const mapPopularStateProps = state=>({
 })
 //将dispatch创建函数关联到props里的onLoadPopularData
 const mapPopularDispatchProps = dispatch =>({
-	onLoadRefreshPopular:(storeName,url,pageSize) => dispatch(actions.onLoadRefreshPopular(storeName,url,pageSize)),
-	onLoadMorePopular:(storeName,pageIndex,pageSize,items,callback) => dispatch(actions.onLoadMorePopular(storeName,pageIndex,pageSize,items,callback))
+	onLoadRefreshPopular:(storeName,url,pageSize,favoriteDao) => dispatch(actions.onLoadRefreshPopular(storeName,url,pageSize,favoriteDao)),
+	onLoadMorePopular:(storeName,pageIndex,pageSize,items,favoriteDao,callback) => dispatch(actions.onLoadMorePopular(storeName,pageIndex,pageSize,items,favoriteDao,callback)),
+	onFlushPopularFavorite:(storeName,pageIndex,pageSize,items,favoriteDao) => dispatch(actions.onLoadMorePopular(storeName,pageIndex,pageSize,items,favoriteDao))
 })
 
 const PopularTabPage = connect(mapPopularStateProps,mapPopularDispatchProps)(PopularTab);

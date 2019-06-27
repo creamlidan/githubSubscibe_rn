@@ -24,6 +24,16 @@ import TrendingDialog ,{ TimeSpans }from '../common/TrendingDialog'
 const URL = 'https://github.com/trending/';
 const PAGESIZE = 10
 const EVENT_TYPE_TIME_SPAN_CHANGE = 'EVENT_TYPE_TIME_SPAN_CHANGE'
+import FavoriteUtil from "../util/FavoriteUtil";
+import {FLAG_STORAGE} from "../expand/dao/DataStore";
+//收藏功能
+import FavoriteDao from "../expand/dao/FavoriteDao";
+const favoriteDao = new FavoriteDao(FLAG_STORAGE.flag_trending);
+
+//监听总线通知
+import EventTypes from '../util/EventTypes';
+import EventBus from 'react-native-event-bus'
+
 export default class TrendingPage extends Component{
 	constructor(props){
 		super(props)
@@ -135,23 +145,37 @@ class TrendingTab extends Component{
 			this.timeSpan = timeSpan
 			this._loadData()
 		})
+		EventBus.getInstance().addListener(EventTypes.favoriteChanged_trending, this.favoriteChangeListener = () => {
+            this.isFavoriteChanged = true;
+        });
+        EventBus.getInstance().addListener(EventTypes.bottom_tab_select, this.bottomTabSelectListener = (data) => {
+            if (data.to === 1 && this.isFavoriteChanged) {
+                this._loadData(null, true);
+            }
+        })
 	}
 	//当卸载组件的时候移除监听EVENT_TYPE_TIME_SPAN_CHANGE
 	componentWillUnmount(){
 		if(this.timeSpanChangeListener){
 			this.timeSpanChangeListener.remove();
 		}
+		EventBus.getInstance().removeListener(this.favoriteChangeListener);
+        EventBus.getInstance().removeListener(this.bottomTabSelectListener);
 	}
-	_loadData(loadMore){
-		const { onLoadRefreshTrending,onLoadMoreTrending } = this.props;
+	_loadData(loadMore,refreshFavorite){
+		const { onLoadRefreshTrending,onLoadMoreTrending,onFlushTrendingFavorite } = this.props;
 		const store = this._store();
 		let url = this._getFatchUrl(this.storeName)
 		if(loadMore){
-			onLoadMoreTrending(this.storeName,++store.pageIndex,PAGESIZE,store.items,callback =>{
+			onLoadMoreTrending(this.storeName,++store.pageIndex,PAGESIZE,store.items,favoriteDao,callback =>{
 				this.refs.toast.show('没有更多了~');
 			})
+		}else if(refreshFavorite){
+			debugger
+			onFlushTrendingFavorite(this.storeName,store.pageIndex,PAGESIZE,store.items,favoriteDao)
+			this.isFavoriteChanged = false;
 		}else{
-			onLoadRefreshTrending(this.storeName,url,PAGESIZE)
+			onLoadRefreshTrending(this.storeName,url,PAGESIZE,favoriteDao)
 		}
 		
 	}
@@ -189,12 +213,15 @@ class TrendingTab extends Component{
 	_renderItem($data){
 		const item = $data.item;
 		return <TrendingItem
-			item = {item}
-			onSelect={()=>{
+			projectModel = {item}
+			onSelect={(callback)=>{
 				NavigationUtil.goPage({
 					projectModel:item,
+					flag:FLAG_STORAGE.flag_trending,
+					callback
 				},'DetailPage')
 			}}
+			onFavorite={(item,isFavorite)=>FavoriteUtil.onFavorite(favoriteDao,item,isFavorite,FLAG_STORAGE.flag_trending)}
 		/>
 	}
 	render(){
@@ -202,9 +229,9 @@ class TrendingTab extends Component{
 		return(
 			<View style={styles.container}>
 				<FlatList
-					data= {store.projectModes}
+					data= {store.projectModels}
 					renderItem = {data =>this._renderItem(data)}
-					keyExtractor={item=>'trengding'+(item.id || item.fullName)}
+					keyExtractor={item=>'trengding'+(item.item.id || item.item.fullName)}
 					refreshControl = {
 						<RefreshControl
 							title={'Loading'}
@@ -245,8 +272,9 @@ const mapTrendingStateProps = state=>({
 })
 
 const mapTrendingDispatchProps = dispatch =>({
-	onLoadRefreshTrending:(storeName,url,pageSize) => dispatch(actions.onLoadRefreshTrending(storeName,url,pageSize)),
-	onLoadMoreTrending:(storeName,pageIndex,pageSize,items,callback) => dispatch(actions.onLoadMoreTrending(storeName,pageIndex,pageSize,items,callback))
+	onLoadRefreshTrending:(storeName,url,pageSize,favoriteDao) => dispatch(actions.onLoadRefreshTrending(storeName,url,pageSize,favoriteDao)),
+	onLoadMoreTrending:(storeName,pageIndex,pageSize,items,favoriteDao,callback) => dispatch(actions.onLoadMoreTrending(storeName,pageIndex,pageSize,items,favoriteDao,callback)),
+	onFlushTrendingFavorite:(storeName,pageIndex,pageSize,items,favoriteDao) => dispatch(actions.onFlushTrendingFavorite(storeName,pageIndex,pageSize,items,favoriteDao))
 })
 const TrendingTabPage = connect(mapTrendingStateProps,mapTrendingDispatchProps)(TrendingTab);
 const styles = StyleSheet.create({

@@ -14,6 +14,9 @@ import MyPage from '../page/MyPage'
 
 import { connect } from 'react-redux'
 
+import EventTypes from '../util/EventTypes';
+import EventBus from 'react-native-event-bus'
+
 const TABS = {
 	PopularPage:{
 		screen:PopularPage,
@@ -110,8 +113,16 @@ class DynamicTabNavigator extends Component{
 		
 	}
 	render(){
-		const BottomTabBar = this._tabNavigator();
-		return <BottomTabBar/>
+		const Tab = this._tabNavigator();
+		return <Tab
+			onNavigationStateChange={(prevState,newState,action)=>{
+				//当底部tab发生点击变化的时候发出一个事件
+				EventBus.getInstance().fireEvent(EventTypes.bottom_tab_select,{
+					from:prevState.index,
+					to:newState.index
+				})
+			}}
+		/>
 	}
 }
 //重置tabbar主题颜色

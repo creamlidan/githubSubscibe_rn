@@ -1,9 +1,9 @@
-import { AsyncStorage } from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage';
 const FAVORITR_KEY_PREFIX = 'favorite_'
-export default FavoriteDao{
+export default class FavoriteDao{
 	//flag标识是最热模块的收藏还是趋势模块
 	constructor(flag){
-		this.favoriteKey = FAVORITR_KEY_PREFIX + falg;
+		this.favoriteKey = FAVORITR_KEY_PREFIX + flag;
 	}
 
 	/*
@@ -13,12 +13,8 @@ export default FavoriteDao{
 	* @param callback
 	*/
 	saveFavoriteItem(key,value,callback){
-		AsyncStorage.setItem(key,value,(error,result)=>{
-			if(!error){
-				//更新favorite的key
-				this.updateFavoriteKeys(key,true);
-			}
-		})
+		AsyncStorage.setItem(key,value)
+		this.updateFavoriteKeys(key,true);
 	}
 	/*
 	* 更新favorite key集合
@@ -59,7 +55,27 @@ export default FavoriteDao{
 			}
 		})
 	}
-	
+
+/**
+ * 获取收藏的Repository对应的key
+ * @return {Promise}
+ */
+	getFavoriteKeys() {
+		return new Promise((resolve, reject) => {
+			AsyncStorage.getItem(this.favoriteKey, (error, result) => {
+				if (!error) {
+					try {
+						resolve(JSON.parse(result));
+					} catch (e) {
+						reject(error);
+					}
+				} else {
+					reject(error);
+				}
+			});
+		});
+	}
+
 	/**
      * 获取所以收藏的项目
      * @return {Promise}
@@ -79,7 +95,7 @@ export default FavoriteDao{
                             });
                             resolve(items);
                         } catch (e) {
-                            reject(e);
+							reject(e);
                         }
                     });
                 } else {
